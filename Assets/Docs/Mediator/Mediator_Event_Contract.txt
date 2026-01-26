@@ -1,0 +1,77 @@
+Mediator 입력(받는 이벤트)
+
+[Requested] (요청: ~하고 싶다)
+
+PlayerActionRequested : 플레이어가 어떤 행동을 “원한다”
+
+BossActionRequested : 보스가 어떤 행동을 “원한다”
+
+[Occurred] (발생: 실제로 ~가 일어났다)
+
+PlayerActionOccurred : 플레이어 행동이 실제로 실행/완료됐다
+
+BossActionOccurred : 보스 행동이 실제로 실행/완료됐다
+
+✅ Mediator 출력(내보내는 이벤트)
+
+[Decision] (판정: 가능/불가/대체)
+
+PlayerActionDecided : 요청을 허용/거부/대체로 판정
+
+BossActionDecided : 요청을 허용/거부/대체로 판정
+
+[Command/Request] (후속 요청: 다음에 실행해라)
+
+ExecutePlayerActionRequested : 플레이어 쪽에 “이 행동을 실행해라” 요청
+
+ExecuteBossActionRequested : 보스 쪽에 “이 행동을 실행해라” 요청
+
+Mediator는 Requested/Ocurred를 해석하고, Decided/ExecuteRequested를 발행한다.
+
+Mediator는 Player/Boss를 직접 실행하지 않는다(메서드 호출/컴포넌트 조작 금지).
+
+“Occurred”는 실제로 일어난 사실만 올린다(판정 결과를 Occurred로 올리지 않는다)
+
+[Event Data - Minimal]
+
+PlayerActionRequested:
+- ActionId
+- Source(Player)
+
+BossActionRequested:
+- ActionId
+- Source(Boss)
+
+PlayerActionOccurred:
+- ActionId
+- Source(Player)
+
+BossActionOccurred:
+- ActionId
+- Source(Boss)
+
+PlayerActionDecided:
+- ActionId
+- Result(Allow / Reject / Replace)
+
+BossActionDecided:
+- ActionId
+- Result(Allow / Reject / Replace)
+
+ExecutePlayerActionRequested:
+- ActionId
+
+ExecuteBossActionRequested:
+- ActionId
+
+[Boss Execution Contract]
+
+Mediator -> Boss (Command):
+- ExecuteBossActionRequested(ActionId, Source=Mediator)
+
+Boss -> Mediator (Occurred):
+- BossActionOccurred(ActionId, Phase=Started/Completed/Cancelled, Source=Boss)
+
+Rules:
+- Boss는 Command를 실행만 한다 (판단/선택 금지).
+- Boss는 결과를 Occurred로 사실만 보고한다.
