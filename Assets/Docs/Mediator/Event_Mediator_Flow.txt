@@ -1,0 +1,7 @@
+Player/Boss → Requested 이벤트 발행 (판단 X)
+
+Event Layer(EventBus/Logger) → 전달/기록만 (판단 X)
+
+Mediator → 요청/사실 이벤트 해석 + 규칙 판단 (판단 O)
+
+Mediator → 결과는 이벤트로 발행 (직접 실행 X)
