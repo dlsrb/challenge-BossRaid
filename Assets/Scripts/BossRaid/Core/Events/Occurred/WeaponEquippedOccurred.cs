@@ -1,5 +1,4 @@
 using BossRaid.Core.Events;
-using BossRaid.Gameplay.Weapons;
 
 namespace BossRaid.Core.Events.Occurred
 {
@@ -8,13 +7,13 @@ namespace BossRaid.Core.Events.Occurred
         public override string EventName => nameof(WeaponEquippedOccurred);
 
         public string ActorId { get; }
-        public WeaponDefinitionSO Weapon { get; }
+        public string WeaponId { get; }
 
-        public WeaponEquippedOccurred(string sourceId, string actorId, WeaponDefinitionSO weapon)
+        public WeaponEquippedOccurred(string sourceId, string actorId, string weaponId)
             : base(sourceId)
         {
             ActorId = actorId;
-            Weapon = weapon;
+            WeaponId = weaponId;
         }
     }
 }

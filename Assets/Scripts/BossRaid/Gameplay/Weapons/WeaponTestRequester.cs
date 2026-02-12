@@ -8,13 +8,11 @@ using BossRaid.Gameplay.Weapons;
 namespace BossRaid.Gameplay.Weapons
 {
     /// <summary>
-    /// Step 5 ≈◊Ω∫∆ÆøÎ: «√∑π¿Ã ¡ﬂø° Requested ¿Ã∫•∆Æ∏¶ º’¿∏∑Œ πﬂ«‡«—¥Ÿ.
-    /// - ∆«¥‹ æ¯¿Ω(±◊≥… ø‰√ª πﬂª˝)
-    /// - EventLayerContext.Bus¿« Publish∏¶ ªÁøÎ
+    /// Step 5 ÎîîÎ≤ÑÍ∑∏ ÎèÑÍµ¨: ContextMenuÎ°ú Requested Ïù¥Î≤§Ìä∏Î•º Î∞úÌñâÌïúÎã§.
     /// </summary>
     public sealed class WeaponTestRequester : MonoBehaviour
     {
-        [Header("Bus (SceneContext/EventLayer¿« EventLayerContext ø¨∞·)")]
+        [Header("Bus (EventLayerContext in Scene)")]
         [SerializeField] private EventLayerContext eventLayerContext;
 
         [Header("Target Actor")]
@@ -33,14 +31,22 @@ namespace BossRaid.Gameplay.Weapons
 
             if (weaponToEquip == null)
             {
-                Debug.LogError("[WeaponTestRequester] weaponToEquip ¿Ã ∫ÒæÓ¿÷¿Ω (WeaponDefinitionSO ø°º¬ ø¨∞· « ø‰)");
+                Debug.LogError("[WeaponTestRequester] weaponToEquip is not assigned (set a WeaponDefinitionSO)");
                 return;
             }
+
+            var spec = new WeaponEquipRequested.WeaponSpec(
+                weaponId: weaponToEquip.WeaponId,
+                baseDamage: weaponToEquip.BaseDamage,
+                cooldownSeconds: weaponToEquip.CooldownSeconds,
+                attackAnimTrigger: weaponToEquip.AttackAnimTrigger,
+                specialKey: weaponToEquip.SpecialKey
+            );
 
             var e = new WeaponEquipRequested(
                 sourceId: "WeaponTestRequester",
                 actorId: actorId,
-                weapon: weaponToEquip
+                weapon: spec
             );
 
             bus.Publish(e);
@@ -76,13 +82,16 @@ namespace BossRaid.Gameplay.Weapons
 
             if (eventLayerContext == null)
             {
-                Debug.LogError("[WeaponTestRequester] eventLayerContext∞° ∫ÒæÓ¿÷¿Ω (SceneContext/EventLayer¿« EventLayerContext∏¶ ø¨∞·)");
+                Debug.LogError("[WeaponTestRequester] eventLayerContext is not assigned (link EventLayerContext in the Inspector)");
                 return false;
             }
 
+            // ContextMenu can be invoked outside Play Mode, so initialize lazily.
+            eventLayerContext.EnsureInitialized();
+
             if (eventLayerContext.Bus == null)
             {
-                Debug.LogError("[WeaponTestRequester] eventLayerContext.Bus∞° null (Awake Ω««‡ ¿¸¿œ ºˆ ¿÷¿Ω)");
+                Debug.LogError("[WeaponTestRequester] eventLayerContext.Bus is null (initialization order)");
                 return false;
             }
 

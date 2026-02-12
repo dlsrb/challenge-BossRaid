@@ -18,9 +18,14 @@ namespace BossRaid.Gameplay.Boss
 
         public void Init(GameEventBus bus) => _bus = bus;
 
-        private void Start()
+        [ContextMenu("Debug/Request Attack")]
+        private void DebugRequestAttack()
         {
-            if (_bus == null) return;
+            if (_bus == null)
+            {
+                Debug.LogWarning($"[{actorId}] Bus is not initialized yet.");
+                return;
+            }
 
             _bus.Publish(new ActorActionRequested(
                 sourceId: actorId,

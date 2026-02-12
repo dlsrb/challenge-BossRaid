@@ -3,9 +3,8 @@ using UnityEngine;
 namespace BossRaid.Core.Events
 {
     /// <summary>
-    /// Battle/SceneContext ¼Ò¼Ó.
-    /// ¾À ¹üÀ§¿¡¼­ EventBus¸¦ »ı¼º/º¸°üÇÑ´Ù.
-    /// (Àü¿ª ½Ì±ÛÅæ °­Á¦ÇÏÁö ¾ÊÀ½)
+    /// Scene/Battle ì»¨í…ìŠ¤íŠ¸.
+    /// ì´ ì˜¤ë¸Œì íŠ¸ê°€ EventBus ì¸ìŠ¤í„´ìŠ¤ë¥¼ ìƒì„±/ë³´ê´€í•œë‹¤.
     /// </summary>
     public sealed class EventLayerContext : MonoBehaviour
     {
@@ -15,6 +14,13 @@ namespace BossRaid.Core.Events
 
         private void Awake()
         {
+            EnsureInitialized();
+        }
+
+        public void EnsureInitialized()
+        {
+            if (Bus != null) return;
+
             IEventLogger logger = enableDebugLog ? new UnityDebugEventLogger() : null;
             Bus = new GameEventBus(logger);
         }
