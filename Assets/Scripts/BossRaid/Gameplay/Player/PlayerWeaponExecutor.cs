@@ -5,11 +5,11 @@ using BossRaid.Core.Events.Command;
 
 namespace BossRaid.Gameplay.Player
 {
-    // ½ÇÇàÀÚ´Â "¸í·ÉÀ» ½ÇÇà"¸¸ ÇÑ´Ù. ÆÇ´Ü/±ÔÄ¢ ±İÁö.
+    // ExecutorëŠ” "ì‹¤í–‰"ë§Œ í•œë‹¤. íŒë‹¨/ê·œì¹™(Decision)ì€ Mediatorì—ì„œë§Œ í•œë‹¤.
     public sealed class PlayerWeaponExecutor : MonoBehaviour, IGameEventHandler<WeaponAttackCommandIssued>
     {
         [SerializeField] private string actorId = "Player";
-        [SerializeField] private Animator animator; // ¼±ÅÃ
+        [SerializeField] private Animator animator;
 
         private GameEventBus _bus;
 
@@ -20,20 +20,19 @@ namespace BossRaid.Gameplay.Player
 
         public void Handle(WeaponAttackCommandIssued e)
         {
-            // ÀÌ ½ÇÇàÀÚ°¡ ´ë»óÀÎÁö È®ÀÎ(ÇÊÅÍ¸µÀº OK: ±ÔÄ¢ÆÇ´Ü ¾Æ´Ô, ¶ó¿ìÆÃ/ÁÖ¼Ò Ã³¸®)
+            // ì´ Executorê°€ ë‹´ë‹¹í•˜ëŠ” Actorì¸ì§€ í•„í„°ë§(ê·œì¹™ íŒë‹¨ì´ ì•„ë‹ˆë¼ ë¼ìš°íŒ…/ëŒ€ìƒ í™•ì¸).
             if (e.ActorId != actorId) return;
 
-            // 1) ·Î±×(Èå¸§ ÃßÀû)
+            // 1) ë¡œê·¸(íë¦„ ì¶”ì )
             Debug.Log($"[PlayerWeaponExecutor] Execute Attack | weapon={e.Command.WeaponId}, dmg={e.Command.Damage}, special={e.Command.SpecialKey}");
 
-            // 2) ¾Ö´Ï Æ®¸®°Å(ÀÖÀ¸¸é ½ÇÇà, ¾øÀ¸¸é ½ºÅµ)
+            // 2) ì‹¤í–‰(ì—°ì¶œ/ì• ë‹ˆë©”ì´ì…˜)
             if (animator != null && !string.IsNullOrEmpty(e.Command.AnimTrigger))
             {
                 animator.SetTrigger(e.Command.AnimTrigger);
             }
 
-            // Step 5: ¿©±â±îÁö°¡ "½ÇÇà" ÃÖ¼Ò.
-            // ÇÇ°İ ÆÇÁ¤/Åõ»çÃ¼ »ı¼º/µ¥¹ÌÁö Àû¿ëÀº Step 6~7 ÄÚ¾î·çÇÁ¿¡¼­ ºÙÀÎ´Ù.
+            // ì‹¤ì œ ë°ë¯¸ì§€/íˆíŠ¸ íŒì •/ìŠ¤í° ë“±ì€ Step 6~7ì—ì„œ í™•ì¥í•œë‹¤.
         }
     }
 }

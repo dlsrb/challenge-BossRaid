@@ -4,11 +4,10 @@ using BossRaid.Core.Events;
 using BossRaid.Core.Events.Command;
 using BossRaid.Core.Events.Occurred;
 using BossRaid.Core.Events.Requested;
-using BossRaid.Gameplay.Weapons;
 
 namespace BossRaid.Core.Mediators
 {
-    // ÆÇ´ÜÀÚ´Â ¿©±â ÇÏ³ª(Weapon °ü·Ã ±ÔÄ¢/ÇØ¼®)
+    // ë¬´ê¸° ê·œì¹™/íŒë‹¨ì€ ì´ Mediator ë‹¨ì¼ ì§€ì ì—ì„œë§Œ ìˆ˜í–‰í•œë‹¤.
     public sealed class WeaponMediator :
         IGameEventHandler<WeaponEquipRequested>,
         IGameEventHandler<WeaponUseRequested>
@@ -17,7 +16,7 @@ namespace BossRaid.Core.Mediators
         private readonly string _sourceId;
 
         // ActorId -> Equipped Weapon
-        private readonly Dictionary<string, WeaponDefinitionSO> _equipped = new();
+        private readonly Dictionary<string, WeaponEquipRequested.WeaponSpec> _equipped = new Dictionary<string, WeaponEquipRequested.WeaponSpec>();
 
         public WeaponMediator(GameEventBus bus, string sourceId)
         {
@@ -27,22 +26,23 @@ namespace BossRaid.Core.Mediators
 
         public void Handle(WeaponEquipRequested e)
         {
-            // ÆÇ´Ü(=ÀåÂø È®Á¤)Àº ¿©±â¼­¸¸
-            if (e.Weapon == null) return;
+            // íŒë‹¨(=ìœ íš¨ì„±/ê·œì¹™ í™•ì¸)ì€ ì—¬ê¸°ì„œ í•œë‹¤.
+            if (string.IsNullOrEmpty(e.ActorId)) return;
+            if (string.IsNullOrEmpty(e.Weapon.WeaponId)) return;
 
             _equipped[e.ActorId] = e.Weapon;
 
-            // "ÀåÂøµÇ¾ú´Ù" »ç½Ç º¸°í
-            _bus.Publish(new WeaponEquippedOccurred(_sourceId, e.ActorId, e.Weapon));
+            // "ë¬´ê¸°ê°€ ì¥ì°©ë˜ì—ˆë‹¤"ëŠ” ë°œìƒ ì‚¬ì‹¤ì„ ì•Œë¦°ë‹¤.
+            _bus.Publish(new WeaponEquippedOccurred(_sourceId, e.ActorId, e.Weapon.WeaponId));
         }
 
         public void Handle(WeaponUseRequested e)
         {
-            // ±ÔÄ¢/ÆÇ´Ü: ÇöÀç ÀåÂø ¹«±â°¡ ÀÖ¾î¾ß ¸í·ÉÀ» ¸¸µç´Ù(ÆÇ´ÜÀÚ´Â Mediator)
-            if (!_equipped.TryGetValue(e.ActorId, out var weapon) || weapon == null)
+            // ê·œì¹™: ì¥ì°©ëœ ë¬´ê¸°ê°€ ì—†ìœ¼ë©´ ì‚¬ìš© ìš”ì²­ì„ ë¬´ì‹œí•œë‹¤(íŒë‹¨ì€ Mediatorì—ì„œë§Œ).
+            if (!_equipped.TryGetValue(e.ActorId, out var weapon))
                 return;
 
-            // WeaponÀº ÆÇ´ÜÇÏÁö ¾Ê´Â´Ù. Mediator°¡ Weapon Á¤ÀÇ¸¦ "ÀĞ¾î¼­" Command¸¦ ¸¸µç´Ù.
+            // ExecutorëŠ” íŒë‹¨í•˜ì§€ ì•ŠëŠ”ë‹¤. Mediatorê°€ ìƒíƒœ/ê·œì¹™ì„ í•´ì„í•´ ì‹¤í–‰ Commandë¡œ ë³€í™˜í•œë‹¤.
             var cmd = new WeaponAttackCommand(
                 weaponId: weapon.WeaponId,
                 damage: weapon.BaseDamage,

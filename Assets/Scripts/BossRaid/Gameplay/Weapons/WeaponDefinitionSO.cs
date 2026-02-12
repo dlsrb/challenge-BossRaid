@@ -11,10 +11,10 @@ namespace BossRaid.Gameplay.Weapons
         [SerializeField] private string displayName = "Default Weapon";
 
         [Header("Concept (you fill only)")]
-        [Tooltip("Mediator가 해석하는 키. if 분기 대신 키/태그로 확장.")]
+        [Tooltip("Key interpreted by the mediator (rules layer).")]
         [SerializeField] private string conceptKey = "concept.melee";
 
-        [Tooltip("검색/분류용 태그(예: Melee, Magic, Dot, Burst)")]
+        [Tooltip("Search/filter tags (e.g. Melee, Magic, DoT, Burst).")]
         [SerializeField] private string[] tags;
 
         [Header("Balance (you tune later)")]
@@ -22,14 +22,14 @@ namespace BossRaid.Gameplay.Weapons
         [SerializeField] private float cooldownSeconds = 0.5f;
 
         [Header("Presentation Hooks (executor uses, no decision)")]
-        [Tooltip("Animator Trigger 이름(없으면 실행자는 스킵)")]
+        [Tooltip("Animator Trigger name (used by the executor).")]
         [SerializeField] private string attackAnimTrigger = "Attack";
 
-        [Tooltip("공격 프리팹(필수 아님). Step 5에서는 생성 안 해도 됨.")]
+        [Tooltip("Optional attack prefab reference.")]
         [SerializeField] private GameObject attackPrefab;
 
         [Header("Special (you design later)")]
-        [Tooltip("특수능력/옵션 확장용 키(예: special.chain, special.explode)")]
+        [Tooltip("Special option key (e.g. special.chain, special.explode).")]
         [SerializeField] private string specialKey = "";
 
         public string WeaponId => weaponId;
