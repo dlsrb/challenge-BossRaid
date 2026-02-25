@@ -8,7 +8,7 @@ namespace BossRaid.Core.Events
     /// - 이 레이어는 '전달'과 '기록'만 한다.
     /// - 판단/규칙(Decision)은 Mediator에서만 한다.
     /// </summary>
-    public sealed class GameEventBus
+    public sealed class GameEventBus : IGameEventBus
     {
         private readonly IEventLogger _logger;
         private readonly Dictionary<Type, List<object>> _handlers = new Dictionary<Type, List<object>>();

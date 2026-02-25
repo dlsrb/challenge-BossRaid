@@ -14,7 +14,7 @@ namespace BossRaid.Core.Events
         /// 레거시 Step 코드 호환용.
         /// 가능하면 Raise 대신 Publish를 사용한다.
         /// </summary>
-        public static void Raise<TEvent>(this GameEventBus bus, TEvent gameEvent)
+        public static void Raise<TEvent>(this IGameEventBus bus, TEvent gameEvent)
             where TEvent : IGameEvent
         {
             if (bus == null) throw new ArgumentNullException(nameof(bus));
@@ -23,7 +23,7 @@ namespace BossRaid.Core.Events
             bus.Publish(gameEvent);
         }
 
-        public static void Raise(this GameEventBus bus, IGameEvent gameEvent)
+        public static void Raise(this IGameEventBus bus, IGameEvent gameEvent)
         {
             throw new NotSupportedException(
                 "Do not call Raise(IGameEvent). Use bus.Publish(concreteEvent) or Raise<TEvent>(concreteEvent)."

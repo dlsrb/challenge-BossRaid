@@ -1,4 +1,8 @@
 // Assets/Scripts/BossRaid/Gameplay/Weapons/WeaponTestRequester.cs
+#if UNITY_EDITOR
+using UnityEditor;
+using UnityEngine;
+using BossRaid.Gameplay.Weapons;
 using UnityEngine;
 
 using BossRaid.Core.Events;
@@ -97,6 +101,32 @@ namespace BossRaid.Gameplay.Weapons
 
             bus = eventLayerContext.Bus;
             return true;
+            
         }
     }
 }
+[CustomEditor(typeof(WeaponTestRequester))]
+public sealed class WeaponTestRequesterEditor : Editor
+{
+    public override void OnInspectorGUI()
+    {
+        // 기본 Inspector(기존 필드들) 그대로 표시
+        DrawDefaultInspector();
+
+        GUILayout.Space(10);
+        EditorGUILayout.LabelField("Step5 Debug Buttons", EditorStyles.boldLabel);
+
+        var t = (WeaponTestRequester)target;
+
+        // Play Mode가 아닐 때도 ContextMenu처럼 호출 가능(너 TryGetBus가 lazy init 하니까 OK)
+        if (GUILayout.Button("Test: Weapon Equip Requested"))
+            t.TestEquipRequested();
+
+        if (GUILayout.Button("Test: Weapon Use Requested"))
+            t.TestUseRequested();
+
+        if (GUILayout.Button("Test: Equip + Use Requested"))
+            t.TestEquipAndUse();
+    }
+}
+#endif

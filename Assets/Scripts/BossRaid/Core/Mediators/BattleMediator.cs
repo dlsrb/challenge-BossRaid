@@ -8,10 +8,10 @@ namespace BossRaid.Core.Mediators
     // ✅ 제네릭 핸들러로 변경
     public sealed class BattleMediator : IGameEventHandler<ActorActionRequested>
     {
-        private readonly GameEventBus _bus;
+        private readonly IGameEventBus _bus;
         private readonly string _mediatorId;
 
-        public BattleMediator(GameEventBus bus, string mediatorId = "Mediator")
+        public BattleMediator(IGameEventBus bus, string mediatorId = "Mediator")
         {
             _bus = bus;
             _mediatorId = mediatorId;
