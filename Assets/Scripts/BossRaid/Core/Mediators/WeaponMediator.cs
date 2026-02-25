@@ -12,13 +12,13 @@ namespace BossRaid.Core.Mediators
         IGameEventHandler<WeaponEquipRequested>,
         IGameEventHandler<WeaponUseRequested>
     {
-        private readonly GameEventBus _bus;
+        private readonly IGameEventBus _bus;
         private readonly string _sourceId;
 
         // ActorId -> Equipped Weapon
         private readonly Dictionary<string, WeaponEquipRequested.WeaponSpec> _equipped = new Dictionary<string, WeaponEquipRequested.WeaponSpec>();
 
-        public WeaponMediator(GameEventBus bus, string sourceId)
+        public WeaponMediator(IGameEventBus bus, string sourceId)
         {
             _bus = bus;
             _sourceId = sourceId;

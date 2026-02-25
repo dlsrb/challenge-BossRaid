@@ -1,23 +1,29 @@
 using UnityEngine;
 using BossRaid.Core.Events;
-using BossRaid.Core.Mediators;
-using BossRaid.Core.Events.Requested;
 using BossRaid.Core.Events.Command;
+using BossRaid.Core.Events.Requested;
+using BossRaid.Core.Mediators;
+using BossRaid.Core.Mediators.PromotionEffects;
+using BossRaid.Core.Mediators.PromotionEffects.Rules;
 using BossRaid.Gameplay.Boss;
 using BossRaid.Gameplay.Player;
+using BossRaid.Gameplay.Promotion;
 
 public sealed class BattleCompositionRoot : MonoBehaviour
 {
     [SerializeField] private EventLayerContext eventLayerContext;
     [SerializeField] private BossActorExecutor boss;
-
-    // ✅ Step 5 추가: PlayerRoot에 붙일 실행자(Inspector 연결)
     [SerializeField] private PlayerWeaponExecutor playerWeaponExecutor;
 
-    private BattleMediator _mediator;
+    [Header("Catalogs")]
+    [SerializeField] private PromotionDefinitionSO[] promotionDefinitions;
 
-    // ✅ Step 5 추가: 무기 판단자(중재자)
-    private WeaponMediator _weaponMediator;
+    [Header("Weapon Family Map (weaponId -> weaponFamilyId)")]
+    [SerializeField] private WeaponFamilyMapSO weaponFamilyMap;
+
+    private BattleMediator _battleMediator;
+    private PromotionMediator _promotionMediator;
+    private WeaponPromotionComposeMediator _weaponPromotionMediator;
 
     private GameEventBus _bus;
     private bool _wired;
@@ -36,7 +42,6 @@ public sealed class BattleCompositionRoot : MonoBehaviour
             return;
         }
 
-        // ✅ Step 5 추가: 실행자 null 체크(기존 로직 변경 아님, 안전장치 추가)
         if (playerWeaponExecutor == null)
         {
             Debug.LogError("[BattleCompositionRoot] playerWeaponExecutor is NULL (attach and wire in the Inspector)");
@@ -52,22 +57,36 @@ public sealed class BattleCompositionRoot : MonoBehaviour
 
         _bus = eventLayerContext.Bus;
 
-        _mediator = new BattleMediator(_bus, "Mediator");
-
-        _bus.Register<ActorActionRequested>(_mediator);
+        _battleMediator = new BattleMediator(_bus, "Mediator");
+        _bus.Register<ActorActionRequested>(_battleMediator);
         _bus.Register<ActorCommandIssued>(boss);
 
-        // ✅ Step 5 추가: 무기 중재자 생성 + 등록
-        _weaponMediator = new WeaponMediator(_bus, "WeaponMediator");
-        _bus.Register<WeaponEquipRequested>(_weaponMediator);
-        _bus.Register<WeaponUseRequested>(_weaponMediator);
+        _promotionMediator = new PromotionMediator(_bus, "PromotionMediator", promotionDefinitions);
+        _bus.Register<PromotionCandidatesRequested>(_promotionMediator);
+        _bus.Register<PromotionSelectRequested>(_promotionMediator);
+        _bus.Register<PromotionLockRequested>(_promotionMediator);
 
-        // ✅ Step 5 추가: 무기 공격 명령은 Player 실행자가 받는다
+        var rules = new PromotionEffectRuleRegistry(new IPromotionEffectRule[]
+        {
+            new DamageMulFromModifierRule(),
+            new CooldownMulFromModifierRule(),
+        });
+
+        var weaponFamilyResolver = new WeaponFamilyResolver(weaponFamilyMap);
+
+        _weaponPromotionMediator = new WeaponPromotionComposeMediator(
+            _bus,
+            "WeaponPromotionComposeMediator",
+            _promotionMediator,
+            rules,
+            weaponFamilyResolver
+        );
+        _bus.Register<WeaponEquipRequested>(_weaponPromotionMediator);
+        _bus.Register<WeaponUseRequested>(_weaponPromotionMediator);
+
         _bus.Register<WeaponAttackCommandIssued>(playerWeaponExecutor);
 
         boss.Init(_bus);
-
-        // ✅ Step 5 추가: 실행자 초기화
         playerWeaponExecutor.Init(_bus);
 
         _wired = true;
@@ -77,11 +96,15 @@ public sealed class BattleCompositionRoot : MonoBehaviour
     {
         if (!_wired || _bus == null) return;
 
-        _bus.Unregister<ActorActionRequested>(_mediator);
+        _bus.Unregister<ActorActionRequested>(_battleMediator);
         _bus.Unregister<ActorCommandIssued>(boss);
 
-        _bus.Unregister<WeaponEquipRequested>(_weaponMediator);
-        _bus.Unregister<WeaponUseRequested>(_weaponMediator);
+        _bus.Unregister<PromotionCandidatesRequested>(_promotionMediator);
+        _bus.Unregister<PromotionSelectRequested>(_promotionMediator);
+        _bus.Unregister<PromotionLockRequested>(_promotionMediator);
+
+        _bus.Unregister<WeaponEquipRequested>(_weaponPromotionMediator);
+        _bus.Unregister<WeaponUseRequested>(_weaponPromotionMediator);
         _bus.Unregister<WeaponAttackCommandIssued>(playerWeaponExecutor);
     }
 }
