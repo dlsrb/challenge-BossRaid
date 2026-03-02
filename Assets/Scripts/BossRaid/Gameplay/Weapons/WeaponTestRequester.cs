@@ -2,12 +2,9 @@
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
-using BossRaid.Gameplay.Weapons;
-using UnityEngine;
 
 using BossRaid.Core.Events;
 using BossRaid.Core.Events.Requested;
-using BossRaid.Gameplay.Weapons;
 
 namespace BossRaid.Gameplay.Weapons
 {
@@ -105,7 +102,7 @@ namespace BossRaid.Gameplay.Weapons
         }
     }
 }
-[CustomEditor(typeof(WeaponTestRequester))]
+[CustomEditor(typeof(BossRaid.Gameplay.Weapons.WeaponTestRequester))]
 public sealed class WeaponTestRequesterEditor : Editor
 {
     public override void OnInspectorGUI()
@@ -116,7 +113,7 @@ public sealed class WeaponTestRequesterEditor : Editor
         GUILayout.Space(10);
         EditorGUILayout.LabelField("Step5 Debug Buttons", EditorStyles.boldLabel);
 
-        var t = (WeaponTestRequester)target;
+        var t = (BossRaid.Gameplay.Weapons.WeaponTestRequester)target;
 
         // Play Mode가 아닐 때도 ContextMenu처럼 호출 가능(너 TryGetBus가 lazy init 하니까 OK)
         if (GUILayout.Button("Test: Weapon Equip Requested"))

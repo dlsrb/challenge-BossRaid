@@ -1,0 +1,120 @@
+## [Added Rules] Explicit Ban / Event Boundary / Key Integrity / Step7 Acceptance
+
+### A) Explicit Ban — 타입 분기 금지(명시적으로)
+- 금지 예시(절대 금지)
+  - if (bossId == "boss.xxx") { ... }
+  - switch (bossId) { ... }
+  - if (phase == 2) { ... }
+  - if (patternKey == "pattern.xxx") { ... }
+  - if (gimmickKey == "gimmick.xxx") { ... }
+- 허용되는 분기(데이터 기반)
+  - tags 포함 여부, enabledPatternIds 포함 여부, cooldown/weight, ruleKey+params 해석 등
+  - 단, 이 로직은 보스별 예외가 아니라 “일반 규칙 로직”이어야 한다.
+
+### B) Event Boundary — Boss 데이터/Executor 경계
+- Boss 관련 데이터는 Mediator의 “해석 입력”만 제공한다.
+- Executor(Actor 포함)는 Command를 “실행”만 하고 결과를 Occurred로 “보고”만 한다.
+
+### C) Key Integrity — 네이밍 규약(접두사 포함) 고정
+- 모든 키는 lowercase + dot 구분을 기본으로 한다.
+- prefix 규칙(고정)
+  - bossId: boss.<name>        예) boss.abyss_warden
+  - phaseKey: phase.<n|name>   예) phase.1 / phase.enrage
+  - patternKey: pattern.<name> 예) pattern.slam / pattern.shotgun
+  - gimmickKey: gimmick.<name> 예) gimmick.pillar / gimmick.safezone
+- 키는 “외부 참조/로그/데이터 연결” 기준이며, 하드코딩 분기에는 사용하지 않는다.
+
+### D) Step 7 인수조건 — 최소 검증 시나리오 3개(모두 Mediator 단일 판단)
+1) Phase 전환 검증
+   - 입력: HP 변화(또는 시간) Occurred + Boss Definition(phase rule)
+   - 출력: Mediator가 Phase 변경에 따른 Command 흐름을 결정
+   - 금지: Boss/Phase 객체가 스스로 전환 결정
+
+2) Pattern 선택 검증
+   - 입력: 현재 Phase + enabledPatternIds + cooldown/weight + 전투 상태
+   - 출력: Mediator가 pattern 1개를 선택해 Command 발행
+   - 금지: “phase==2면 이 패턴” 같은 하드코딩
+
+3) Gimmick 트리거 검증
+   - 입력: 트리거 발생 Occurred + gimmickKey/params
+   - 출력: Mediator가 gimmick 관련 Command(또는 패턴 변경)를 결정
+   - 금지: 기믹 오브젝트가 발동/결과를 판단
+   ## [Locked Numbers] 보스 최소 구성요소 수치 규약 (명시)
+- 보스 1마리는 아래 최소 구성요소를 반드시 만족해야 한다.
+  - 패턴(pattern) >= 3
+  - 페이즈(phase) >= 2
+  - 기믹(gimmick) >= 1
+- 위 조건을 만족하지 못하면 “보스 데이터가 불완전”하므로 콘텐츠로 채택 불가.
+
+---
+
+## [Boss Data Min Schema] Boss Data 최소 필드 스키마 (최소 필드 고정)
+
+### 0) BossDefinition (최상위) 최소 필드
+- bossId : string                // key naming: boss.<name>
+- tags : string[]                // 예: ["tag.gimmick","tag.heavy"]
+- phaseList : PhaseDef[]         // 최소 2개
+- patternList : PatternDef[]     // 최소 3개
+- gimmickList : GimmickDef[]     // 최소 1개
+
+### 1) PhaseDef (리스트 아이템) 최소 필드
+- phaseKey : string              // key naming: phase.<n|name>
+- enterRuleKey : string          // 예: rule.always / rule.hp_below / rule.time_after
+- enterRuleParams : key/value    // 예: hpRatio=0.7, seconds=60
+- enabledPatternKeys : string[]  // 이 phase에서 사용 가능한 patternKey 목록(최소 1개)
+- phaseTags : string[]           // 선택(없어도 되지만, 있으면 데이터 기반 선택에 사용)
+
+### 2) PatternDef (리스트 아이템) 최소 필드
+- patternKey : string            // key naming: pattern.<name>
+- tags : string[]                // 예: ["tag.melee","tag.aoe"]
+- cooldownSeconds : float        // 0 이상
+- weight : float                 // 0 이상 (선택 우선도 입력)
+- commandKey : string            // Mediator 출력(발행)용 식별자 (보스별 if 금지)
+- params : key/value             // 예: range=3, count=5, radius=2.5
+
+### 3) GimmickDef (리스트 아이템) 최소 필드
+- gimmickKey : string            // key naming: gimmick.<name>
+- tags : string[]                // 예: ["tag.area","tag.control"]
+- params : key/value             // 예: interval=2.0, count=3, radius=4.0
+
+---
+
+## [Difficulty Knobs] 난이도 조정 포인트 (데이터 노브로만 정의)
+난이도는 “코드 분기”가 아니라 아래 노브(데이터 값/키)만 바꿔서 조정한다.
+
+### A) 속도계수(Tempo/Speed Multiplier)
+- tempoScale : float
+  - 패턴 간격/시전/반복 템포에 곱해지는 계수로 사용(해석은 Mediator 정책)
+  - 예: 0.9(느림) ~ 1.2(빠름)
+
+### B) 추가 패턴 활성화(Additional Pattern Enable)
+- extraPatternKeys : string[] 또는 phase별 enabledPatternKeys 확장
+  - 상위 난이도에서만 패턴 후보를 늘리는 용도
+  - 금지: “난이도==hard면 if로 추가” → 데이터로만 활성화
+
+### C) 제약키(Constraint Keys)
+- constraintKeys : string[]  // 예: constraint.safezone_small, constraint.no_heal_window
+  - 제약의 의미는 “키+params”로만 표현
+  - 실제 적용/판정은 Mediator가 수행(Executor/기믹 판단 금지)
+
+---
+
+## [Mediator Invariants] Mediator 불변 조건 (Phase/Pattern/Gimmick 공통)
+- Phase 판단: phase 전환/진입 조건 평가는 항상 Mediator 단일 지점에서만 수행한다.
+- Pattern 판단: 어떤 pattern을 선택/활성화할지 판단은 항상 Mediator 단일 지점에서만 수행한다.
+- Gimmick 판단: gimmick의 발동/효과 적용 여부 판단은 항상 Mediator 단일 지점에서만 수행한다.
+- Boss/Phase/Pattern/Gimmick/Executor는 “판단”을 갖지 않으며, Command 실행 및 Occurred 보고만 한다.
+- if(bossId==...), if(phaseKey==...), if(patternKey==...), if(gimmickKey==...) 형태의 보스별 타입 분기는 금지.
+
+---
+
+## [Step7 Entry Table] Step7 진입 불변 조건 표 (위반 시 실패 기준 포함)
+
+| 불변 조건 | 위반 예시 | 실패 기준(1줄) |
+|---|---|---|
+| 판단은 Mediator 단일 지점 | Boss가 HP보고 phase 바꿈 | “판단 주체 위반” → Step7 진입 실패 |
+| 타입 분기 금지(키 하드코딩 분기) | if(bossId==...) / if(phaseKey==...) | “보스별 예외 로직 발생” → Step7 진입 실패 |
+| Event Layer는 전달/기록만 | Event 핸들러에서 pattern 선택 | “Event 경계 침범” → Step7 진입 실패 |
+| Executor는 실행만 | Executor가 cooldown 체크 | “Executor 판단 침범” → Step7 진입 실패 |
+| 키 규약 준수 | bossId가 BossA 같은 임의 문자열 | “Key 정합성 위반” → Step7 진입 실패 |
+| 최소 구성요소 충족 | pattern 2개만 존재 | “데이터 불완전” → Step7 진입 실패 |

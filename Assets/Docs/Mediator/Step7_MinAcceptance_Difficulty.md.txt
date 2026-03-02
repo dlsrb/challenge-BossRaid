@@ -1,0 +1,90 @@
+# Step 7 Min Acceptance (Difficulty)
+
+- 통과 조건: 아래 시나리오가 모두 “Mediator 단일 판단”으로 통과해야 한다.
+
+## 1) 템포/속도 조정 반영
+입력:
+- `difficultyId` + tempo 관련 `modifiers`
+
+기대 결과:
+- 단일 Compose Mediator가 템포 수치를 조정하고 Command 발행
+
+금지:
+- Executor/Actor가 난이도 계수를 직접 해석
+
+---
+
+## 2) 추가 패턴 활성화 반영
+입력:
+- `rules(op=enable/disable)` + `targetKey=pattern.*` + 현재 phase 상태
+
+기대 결과:
+- Mediator가 후보 패턴 집합을 데이터 기반으로 변경 후 선택
+
+금지:
+- `if (difficultyId == "hard")` 하드코딩 분기
+
+---
+
+## 3) 제약 키 적용
+입력:
+- `constraints` 또는 `targetKey=constraint.*` 룰 + 전투 상태 이벤트
+
+기대 결과:
+- Mediator가 제약 적용 여부를 판단하고 결과 Command/Occurred 발행
+
+금지:
+- UI/기믹 오브젝트/Executor의 직접 판단
+
+---
+
+## 4) 조합 우선순위 검증
+입력:
+- Base + Promotion + Talent + Difficulty
+
+기대 결과:
+- 단일 Compose Mediator가
+  `Base -> Promotion -> Talent -> Difficulty -> Clamp`
+  순서로 1회 합성 후 최종 Command 발행
+
+금지:
+- 여러 Mediator에서 중복 합성/중복 적용
+
+---
+
+## 5) rules vs modifiers 역할 분리 검증
+입력:
+- 구조 토글(rule) + 수치 보정(modifier)
+
+기대 결과:
+- rules: enable/disable/set_flag만 처리
+- modifiers: mul/add 수치만 처리
+
+금지:
+- 동일 효과 이중 해석
+
+---
+
+## 6) targetKey 카탈로그 검증
+입력:
+- 등록된 key / 미등록 key 혼합
+
+기대 결과:
+- 등록된 key만 적용
+- 미등록 key는 무시/거부 + 사실 이벤트 기록
+
+금지:
+- 미등록 key를 문자열 분기로 우회 적용
+
+---
+
+## 7) 전투 중 변경 요청 정책 검증
+입력:
+- 전투 중 Difficulty 변경 요청
+
+기대 결과:
+- 기본 정책에 따라 거부
+- `DifficultyChangeRejectedOccurred(reason)` 또는 `RequestIgnoredOccurred(reason)` 발행
+
+금지:
+- 전투 중 즉시 변경 허용(정책 미고정 상태)

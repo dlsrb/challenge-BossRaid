@@ -1,0 +1,81 @@
+# Step 7 Min Acceptance (Talent)
+
+- 통과 조건: 아래 시나리오가 모두 "Mediator 단일 판단"으로 통과해야 한다.
+
+## 1) 전투 시작 전 Loadout 고정
+입력:
+- TalentLoadoutRequested(actorId, equippedTalentIds[3])
+
+기대 결과:
+- Mediator가 유효성 검증(정확히 3개 / 중복 없음 / ID 존재)
+- 성공 시 TalentLoadoutLockedOccurred(actorId, equippedTalentIds)
+
+금지:
+- UI/Actor/Executor가 직접 유효성 판단
+
+---
+
+## 2) 전투 시작 후 변경 요청 거부
+입력:
+- TalentLoadoutChangeRequested(...) (전투 중)
+
+기대 결과:
+- Mediator가 변경 거부
+- TalentChangeRejectedOccurred(reason) 또는 RequestIgnoredOccurred(reason) 발행
+
+금지:
+- 전투 중 Talent 교체 허용
+- Event Layer/Executor에서 거부 판단 수행
+
+---
+
+## 3) 합성 반영 검증 (Base -> Promotion -> Talent -> Difficulty -> Clamp)
+입력:
+- Base payload + Promotion + Talent + Difficulty
+
+기대 결과:
+- 단일 Compose Mediator가 순서대로 합성
+- 최종 CommandIssued 1회 발행
+- Executor는 그대로 실행만 수행
+
+금지:
+- 개별 Mediator가 독립적으로 payload를 중복 합성
+- Executor에서 Talent modifier 해석
+
+---
+
+## 4) 타입 분기 금지 검증
+입력:
+- talentId / tags / effectKeys / modifiers
+
+기대 결과:
+- 데이터/룰 테이블 기반 처리만 수행
+
+금지:
+- if (talentId == "..."), switch(talentId) 하드코딩 분기
+
+---
+
+## 5) effectKeys vs modifiers 역할 분리 검증
+입력:
+- 단순 수치 보정 Talent
+
+기대 결과:
+- modifiers만으로 반영
+- effectKeys는 필요 시에만 사용(선택)
+
+금지:
+- 동일 효과를 effectKeys + modifiers로 이중 적용
+
+---
+
+## 6) value 해석 규약 검증
+입력:
+- stat.xxx.mul, stat.xxx.add modifier
+
+기대 결과:
+- mul: value 배수 해석(예: 1.05)
+- add: value 델타 해석(예: +5)
+
+금지:
+- mul/add 해석 혼용으로 의도와 다른 결과 발생
