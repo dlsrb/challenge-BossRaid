@@ -305,6 +305,50 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enableDebugLog: 1
+--- !u!1 &240458173
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 240458175}
+  - component: {fileID: 240458174}
+  m_Layer: 0
+  m_Name: Step7Executor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &240458174
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 240458173}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 39fa1cdeedd10214891648807cb6b06b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &240458175
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 240458173}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.0846889, y: 0.14220077, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &301956841
 GameObject:
   m_ObjectHideFlags: 0
@@ -377,6 +421,7 @@ GameObject:
   m_Component:
   - component: {fileID: 782638359}
   - component: {fileID: 782638360}
+  - component: {fileID: 782638361}
   m_Layer: 0
   m_Name: SceneContext
   m_TagString: Untagged
@@ -392,8 +437,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 782638358}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.043955997, y: -0.2197802, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 1.0846889, y: 0.14220077, z: -20}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -418,6 +463,20 @@ MonoBehaviour:
   promotionDefinitions:
   - {fileID: 11400000, guid: fb4379c470873944b8ea1fb4ea621565, type: 2}
   weaponFamilyMap: {fileID: 11400000, guid: 04eb0abd040e27a40af6ba3eaed76333, type: 2}
+--- !u!114 &782638361
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 782638358}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95931f30dd656e340ab079f96ab1f798, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eventBusProvider: {fileID: 177461337}
+  executor: {fileID: 240458174}
 --- !u!1 &823092040
 GameObject:
   m_ObjectHideFlags: 0
@@ -760,3 +819,4 @@ SceneRoots:
   - {fileID: 1348917816}
   - {fileID: 1019147739}
   - {fileID: 301956842}
+  - {fileID: 240458175}

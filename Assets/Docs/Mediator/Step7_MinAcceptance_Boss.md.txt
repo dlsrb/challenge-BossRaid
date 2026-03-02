@@ -1,0 +1,18 @@
+# Step 7 Min Acceptance (Boss)
+
+- 통과 조건: 아래 3개 시나리오가 모두 “Mediator 단일 판단”으로 통과해야 한다.
+
+## 1) Phase 전환
+입력: HP/Time Occurred + bossId/phaseKey 규칙
+출력: Mediator가 phase 전환을 결정하고 Command 발행
+금지: Boss/Phase가 전환 판단
+
+## 2) Pattern 선택
+입력: phaseKey + enabledPatternIds + cooldown/weight
+출력: Mediator가 pattern 1개 선택 후 Command 발행
+금지: if (phase==...), if (patternKey==...)
+
+## 3) Gimmick 트리거
+입력: Trigger Occurred + gimmickKey/params
+출력: Mediator가 gimmick 관련 Command/패턴 변경 결정
+금지: 기믹 오브젝트가 발동/결과 판단
